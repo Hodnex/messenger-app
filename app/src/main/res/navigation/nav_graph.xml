@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/signInFragment">
+
+    <fragment
+        android:id="@+id/signInFragment"
+        android:name="com.hodnex.messengerapp.ui.SignInFragment"
+        tools:layout="@layout/fragment_sign_in">
+        <action
+            android:id="@+id/action_signInFragment_to_enterNameFragment"
+            app:destination="@id/enterNameFragment" />
+        <action
+            android:id="@+id/action_signInFragment_to_dialogsFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/enterNameFragment"
+        android:name="com.hodnex.messengerapp.ui.EnterNameFragment"
+        tools:layout="@layout/fragment_enter_name">
+        <action
+            android:id="@+id/action_enterNameFragment_to_dialogsFragment"
+            app:destination="@id/homeFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.hodnex.messengerapp.ui.HomeFragment"
+        android:label="Home"
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_dialogsFragment_to_chatFragment"
+            app:destination="@id/chatFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/chatFragment"
+        android:name="com.hodnex.messengerapp.ui.ChatFragment"
+        android:label="{title}"
+        tools:layout="@layout/fragment_chat">
+        <argument
+            android:name="dialog"
+            android:defaultValue="@null"
+            app:argType="com.hodnex.messengerapp.data.Dialog"
+            app:nullable="true" />
+        <argument
+            android:name="title"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/inviteMemberFragment"
+        android:name="com.hodnex.messengerapp.ui.InviteMemberFragment"
+        android:label="Invite Member"
+        tools:layout="@layout/fragment_invite_member" />
+    <action
+        android:id="@+id/action_global_inviteMemberFragment"
+        app:destination="@id/inviteMemberFragment" />
+</navigation>

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "429073952999",
+    "project_id": "messeger-applicaton",
+    "storage_bucket": "messeger-applicaton.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:429073952999:android:3dc29893ef5a53d6eb7242",
+        "android_client_info": {
+          "package_name": "com.hodnex.messengerapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "429073952999-6m720n66ah4t6iig44ff78oqve1t98e2.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBfvOsVwSr3h8EUiwNz4FpEcLbLDaCDfy4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "429073952999-6m720n66ah4t6iig44ff78oqve1t98e2.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
