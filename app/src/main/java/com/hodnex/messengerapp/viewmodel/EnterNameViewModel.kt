@@ -17,12 +17,8 @@ class EnterNameViewModel @Inject constructor(
     private val enterNameChannel = Channel<EnterNameEvent>()
     val enterNameEvent = enterNameChannel.receiveAsFlow()
 
-    fun enterName(name: String) {
+    fun enterName(name: String) = viewModelScope.launch {
         repository.changeName(name)
-        navigateToHome()
-    }
-
-    private fun navigateToHome() = viewModelScope.launch {
         enterNameChannel.send(EnterNameEvent.NavigateToHomeScreen)
     }
 

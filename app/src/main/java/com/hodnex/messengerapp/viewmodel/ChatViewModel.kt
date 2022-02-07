@@ -19,7 +19,7 @@ class ChatViewModel @Inject constructor(
     private val dialog = state.get<Dialog>("dialog")
     val title = state.get<String>("title")
 
-    val messages = repository.getMessages(dialog!!.uid)
+    val messages = repository.getMessages(dialog!!.uid).asLiveData()
 
     fun sendMessage(text: String) = viewModelScope.launch {
         repository.addMessage(dialog!!.uid, text)

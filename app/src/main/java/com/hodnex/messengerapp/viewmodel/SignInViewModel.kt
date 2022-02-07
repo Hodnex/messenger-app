@@ -11,7 +11,7 @@ class SignInViewModel @Inject constructor(
     private val repository: DataRepository
 ) : ViewModel() {
 
-    val signUp = repository.signInEvent
+    val authorizationEvent = repository.authorizationEvent.asFlow()
 
     fun signInClick(email: String, password: String) = viewModelScope.launch {
         val user = repository.findUserByEmail(email)

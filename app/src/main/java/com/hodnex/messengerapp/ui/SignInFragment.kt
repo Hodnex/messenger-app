@@ -5,13 +5,16 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import com.hodnex.messengerapp.R
 import com.hodnex.messengerapp.data.DataRepository
 import com.hodnex.messengerapp.databinding.FragmentSignInBinding
+import com.hodnex.messengerapp.util.exhaustive
 import com.hodnex.messengerapp.viewmodel.SignInViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collect
 
 @AndroidEntryPoint
 class SignInFragment : Fragment(R.layout.fragment_sign_in) {
@@ -42,19 +45,23 @@ class SignInFragment : Fragment(R.layout.fragment_sign_in) {
     }
 
     private fun setupObservers() {
-        viewModel.signUp.observe(viewLifecycleOwner) {
-            when (it) {
-                is DataRepository.DataEvent.Failure -> {
-                    Snackbar.make(requireView(), it.msg, Snackbar.LENGTH_LONG).show()
-                }
-                is DataRepository.DataEvent.SignInSuccess -> {
-                    val action = SignInFragmentDirections.actionSignInFragmentToDialogsFragment()
-                    findNavController().navigate(action)
-                }
-                is DataRepository.DataEvent.SignUpSuccess -> {
-                    val action = SignInFragmentDirections.actionSignInFragmentToEnterNameFragment()
-                    findNavController().navigate(action)
-                }
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            viewModel.authorizationEvent.collect {
+                when (it) {
+                    is DataRepository.DataEvent.Failure -> {
+                        Snackbar.make(requireView(), it.msg, Snackbar.LENGTH_LONG).show()
+                    }
+                    is DataRepository.DataEvent.SignInSuccess -> {
+                        val action =
+                            SignInFragmentDirections.actionSignInFragmentToDialogsFragment()
+                        findNavController().navigate(action)
+                    }
+                    is DataRepository.DataEvent.SignUpSuccess -> {
+                        val action =
+                            SignInFragmentDirections.actionSignInFragmentToEnterNameFragment()
+                        findNavController().navigate(action)
+                    }
+                }.exhaustive
             }
         }
     }

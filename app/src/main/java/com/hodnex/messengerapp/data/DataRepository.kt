@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.flow.*
 
 class DataRepository {
 
@@ -16,39 +17,42 @@ class DataRepository {
         FirebaseFirestore.getInstance().collection("Invitations")
     private val dialogsCollectionReference = FirebaseFirestore.getInstance().collection("Dialogs")
 
-    private val _messages = MutableLiveData<List<Message>>()
-    val invitations = MutableLiveData<List<Invitation>>()
-    val dialogs = MutableLiveData<List<Dialog>>()
-    private val users = MutableLiveData<List<User>>()
+    private val _messages = MutableStateFlow(listOf<Message>())
+    private val invitations = MutableStateFlow(listOf<Invitation>())
+    private val dialogs = MutableStateFlow(listOf<Dialog>())
+
+    private var users = listOf<User>()
 
     val currentUserId: String
         get() = firebaseAuth.uid!!
     val currentUser: User
-        get() = users.value!!.find { it.uid == firebaseAuth.uid }!!
+        get() = users.find { it.uid == firebaseAuth.uid }!!
 
-    val signInEvent = MutableLiveData<DataEvent>()
+    private val _authorizationEvent = MutableLiveData<DataEvent>()
+    val authorizationEvent: LiveData<DataEvent>
+        get() = _authorizationEvent
 
     init {
         getUsers()
     }
 
 
-    fun getMessages(userId: String): LiveData<List<Message>> {
+    fun getMessages(userId: String): StateFlow<List<Message>> {
         val messagesFromReference = messagesCollectionReference.document(currentUserId)
             .collection(userId)
-        val messagesToReference = messagesCollectionReference.document(userId ?: "")
+        val messagesToReference = messagesCollectionReference.document(userId)
             .collection(currentUserId)
 
         var messagesFrom = listOf<Message>()
         var messagesTo = listOf<Message>()
 
-        messagesFromReference.addSnapshotListener { snapshot, e ->
+        messagesFromReference.addSnapshotListener { snapshot, _ ->
             if (snapshot != null) {
                 messagesFrom = snapshot.toObjects(Message::class.java)
                 _messages.value = (messagesFrom + messagesTo).sortedByDescending { it.messageTime }
             }
         }
-        messagesToReference.addSnapshotListener { snapshot, e ->
+        messagesToReference.addSnapshotListener { snapshot, _ ->
             if (snapshot != null) {
                 messagesTo = snapshot.toObjects(Message::class.java)
                 _messages.value = (messagesFrom + messagesTo).sortedByDescending { it.messageTime }
@@ -58,10 +62,10 @@ class DataRepository {
     }
 
     private fun getUsers() {
-        usersCollectionReference.addSnapshotListener { snapshot, e ->
+        usersCollectionReference.addSnapshotListener { snapshot, _ ->
             if (snapshot != null) {
                 val usersList = snapshot.toObjects(User::class.java)
-                users.value = usersList
+                users = usersList
             }
         }
     }
@@ -73,14 +77,15 @@ class DataRepository {
         updateDialog(message.text, message.messageTimeFormatted, message.toId, message.messageTime)
     }
 
-    private fun getInvitations() {
+    fun getInvitations(): StateFlow<List<Invitation>> {
         invitationsCollectionReference.document(currentUserId).collection(currentUserId)
-            .addSnapshotListener { snapshot, e ->
+            .addSnapshotListener { snapshot, _ ->
                 if (snapshot != null) {
                     val invitationsList = snapshot.toObjects(Invitation::class.java)
                     invitations.value = invitationsList
                 }
             }
+        return invitations
     }
 
     fun addInvitation(invitation: Invitation) {
@@ -95,18 +100,19 @@ class DataRepository {
             .document(invitation.senderId).delete()
     }
 
-    private fun getDialogs() {
+    fun getDialogs(): StateFlow<List<Dialog>> {
         dialogsCollectionReference.document(currentUserId).collection(currentUserId)
-            .addSnapshotListener { snapshot, e ->
+            .addSnapshotListener { snapshot, _ ->
                 if (snapshot != null) {
                     val dialogsList = snapshot.toObjects(Dialog::class.java)
                     dialogs.value = dialogsList.sortedByDescending { it.time }
                 }
             }
+        return dialogs
     }
 
     fun addDialog(dialog: Dialog) {
-        val currentUser = users.value!!.find { it.uid == currentUserId }!!
+        val currentUser = users.find { it.uid == currentUserId }!!
         dialogsCollectionReference.document(currentUserId).collection(currentUserId)
             .document(dialog.uid).set(dialog)
         dialogsCollectionReference.document(dialog.uid).collection(dialog.uid)
@@ -143,7 +149,7 @@ class DataRepository {
     }
 
     fun findUserByEmail(email: String): User? {
-        return users.value!!.find { it.email == email }
+        return users.find { it.email == email }
     }
 
     fun signUp(email: String, password: String) {
@@ -155,24 +161,20 @@ class DataRepository {
                         email = email
                     )
                 )
-                signInEvent.value = DataEvent.SignUpSuccess
-                getDialogs()
-                getInvitations()
+                _authorizationEvent.value = DataEvent.SignUpSuccess
             }
             .addOnFailureListener { e ->
-                signInEvent.value = DataEvent.Failure(e.message!!)
+                _authorizationEvent.value = DataEvent.Failure(e.message!!)
             }
     }
 
     fun signIn(email: String, password: String) {
         firebaseAuth.signInWithEmailAndPassword(email, password)
             .addOnSuccessListener {
-                getDialogs()
-                getInvitations()
-                signInEvent.value = DataEvent.SignInSuccess
+                _authorizationEvent.value = DataEvent.SignInSuccess
             }
             .addOnFailureListener { e ->
-                signInEvent.value = DataEvent.Failure(e.message!!)
+                _authorizationEvent.value = DataEvent.Failure(e.message!!)
             }
     }
 
@@ -182,7 +184,7 @@ class DataRepository {
 
     fun findDialog(user: User?): Dialog? {
         return if (user != null) {
-            dialogs.value!!.find { it.uid == user.uid }
+            dialogs.value.find { it.uid == user.uid }
         } else {
             null
         }
@@ -190,7 +192,7 @@ class DataRepository {
 
     fun findInvitation(user: User?): Invitation? {
         return if (user != null) {
-            invitations.value!!.find { it.senderId == user.uid }
+            invitations.value.find { it.senderId == user.uid }
         } else {
             null
         }

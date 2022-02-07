@@ -18,7 +18,7 @@ class InviteMemberViewModel @Inject constructor(
     private val inviteMemberChannel = Channel<InviteMemberEvent>()
     val inviteMemberEvent = inviteMemberChannel.receiveAsFlow()
 
-    fun inviteMemberClick(email: String) {
+    fun inviteMemberClick(email: String) = viewModelScope.launch {
         val sender = repository.currentUser
         val receiver = repository.findUserByEmail(email)
         val hasInvitation = repository.findInvitation(receiver) != null

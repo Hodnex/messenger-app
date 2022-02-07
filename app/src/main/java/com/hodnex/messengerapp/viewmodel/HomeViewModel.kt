@@ -16,8 +16,8 @@ class HomeViewModel @Inject constructor(
     private val repository: DataRepository
 ) : ViewModel() {
 
-    val dialogs = repository.dialogs
-    val invitations = repository.invitations
+    val dialogs = repository.getDialogs().asLiveData()
+    val invitations = repository.getInvitations().asLiveData()
 
     private val dialogsChannel = Channel<HomeEvent>()
     val dialogsEvent = dialogsChannel.receiveAsFlow()
