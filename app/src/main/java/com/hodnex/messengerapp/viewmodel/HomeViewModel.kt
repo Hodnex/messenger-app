@@ -4,7 +4,6 @@ import androidx.lifecycle.*
 import com.hodnex.messengerapp.data.DataRepository
 import com.hodnex.messengerapp.data.Dialog
 import com.hodnex.messengerapp.data.Invitation
-import com.hodnex.messengerapp.data.User
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -16,8 +15,8 @@ class HomeViewModel @Inject constructor(
     private val repository: DataRepository
 ) : ViewModel() {
 
-    val dialogs = repository.getDialogs().asLiveData()
-    val invitations = repository.getInvitations().asLiveData()
+    val dialogs = repository.dialogs.asLiveData()
+    val invitations = repository.invitations.asLiveData()
 
     private val dialogsChannel = Channel<HomeEvent>()
     val dialogsEvent = dialogsChannel.receiveAsFlow()

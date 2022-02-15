@@ -18,8 +18,10 @@ class DataRepository {
     private val dialogsCollectionReference = FirebaseFirestore.getInstance().collection("Dialogs")
 
     private val _messages = MutableStateFlow(listOf<Message>())
-    private val invitations = MutableStateFlow(listOf<Invitation>())
-    private val dialogs = MutableStateFlow(listOf<Dialog>())
+    val invitations by lazy { getInvitations() }
+
+    private val _dialogs = MutableStateFlow(listOf<Dialog>())
+    val dialogs by lazy{ getDialogs() }
 
     private var users = listOf<User>()
 
@@ -77,15 +79,17 @@ class DataRepository {
         updateDialog(message.text, message.messageTimeFormatted, message.toId, message.messageTime)
     }
 
-    fun getInvitations(): StateFlow<List<Invitation>> {
+    @JvmName("getInvitations1")
+    private fun getInvitations(): StateFlow<List<Invitation>> {
+        val invitationsList = MutableStateFlow(listOf<Invitation>())
+        Log.d("Main", "Invitation")
         invitationsCollectionReference.document(currentUserId).collection(currentUserId)
             .addSnapshotListener { snapshot, _ ->
                 if (snapshot != null) {
-                    val invitationsList = snapshot.toObjects(Invitation::class.java)
-                    invitations.value = invitationsList
+                    invitationsList.value = snapshot.toObjects(Invitation::class.java)
                 }
             }
-        return invitations
+        return invitationsList
     }
 
     fun addInvitation(invitation: Invitation) {
@@ -100,15 +104,17 @@ class DataRepository {
             .document(invitation.senderId).delete()
     }
 
-    fun getDialogs(): StateFlow<List<Dialog>> {
+    @JvmName("getDialogs1")
+    private fun getDialogs() : Flow<List<Dialog>> {
+        Log.d("Main", "Dialog")
         dialogsCollectionReference.document(currentUserId).collection(currentUserId)
             .addSnapshotListener { snapshot, _ ->
                 if (snapshot != null) {
-                    val dialogsList = snapshot.toObjects(Dialog::class.java)
-                    dialogs.value = dialogsList.sortedByDescending { it.time }
+                    _dialogs.value = snapshot.toObjects(Dialog::class.java)
+                    _dialogs.value.sortedByDescending { it.time }
                 }
             }
-        return dialogs
+        return _dialogs
     }
 
     fun addDialog(dialog: Dialog) {
@@ -125,7 +131,6 @@ class DataRepository {
         userId: String,
         time: Long
     ) {
-        Log.d("Main", userId)
         dialogsCollectionReference.document(currentUserId).collection(currentUserId)
             .document(userId).update(
                 mapOf(
@@ -184,7 +189,7 @@ class DataRepository {
 
     fun findDialog(user: User?): Dialog? {
         return if (user != null) {
-            dialogs.value.find { it.uid == user.uid }
+            _dialogs.value.find { it.uid == user.uid }
         } else {
             null
         }

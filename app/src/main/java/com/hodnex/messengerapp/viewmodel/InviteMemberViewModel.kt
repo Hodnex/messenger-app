@@ -21,14 +21,14 @@ class InviteMemberViewModel @Inject constructor(
     fun inviteMemberClick(email: String) = viewModelScope.launch {
         val sender = repository.currentUser
         val receiver = repository.findUserByEmail(email)
-        val hasInvitation = repository.findInvitation(receiver) != null
-        val hasDialog = repository.findDialog(receiver) != null
-        if (receiver != null && !hasInvitation && !hasDialog) {
+        val invitation = repository.findInvitation(receiver)
+        val dialog = repository.findDialog(receiver)
+        if (receiver != null && invitation == null && dialog == null) {
             repository.addInvitation(Invitation(sender.email, sender.name, sender.uid, receiver.uid))
             navigateBack("Member Invited")
-        } else if (hasInvitation){
+        } else if (invitation != null){
             showErrorMessage("You are already invited by this player")
-        } else if (hasDialog){
+        } else if (dialog != null){
             showErrorMessage("You already have a dialog with this user")
         } else{
             showErrorMessage("User does not exist")
