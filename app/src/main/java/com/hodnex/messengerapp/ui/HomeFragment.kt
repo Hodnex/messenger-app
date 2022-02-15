@@ -1,7 +1,6 @@
 package com.hodnex.messengerapp.ui
 
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -91,7 +90,6 @@ class HomeFragment : Fragment(R.layout.fragment_home), DialogsAdapter.OnItemClic
 
     private fun setupObservers() {
         viewModel.dialogs.observe(viewLifecycleOwner) {
-            Log.d("Main", it.toString())
             dialogsAdapter.submitList(it)
         }
 

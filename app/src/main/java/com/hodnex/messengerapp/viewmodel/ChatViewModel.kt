@@ -3,7 +3,6 @@ package com.hodnex.messengerapp.viewmodel
 import androidx.lifecycle.*
 import com.hodnex.messengerapp.data.DataRepository
 import com.hodnex.messengerapp.data.Dialog
-import com.hodnex.messengerapp.data.Message
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject

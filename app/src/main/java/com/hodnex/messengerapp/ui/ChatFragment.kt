@@ -1,16 +1,12 @@
 package com.hodnex.messengerapp.ui
 
 import android.os.Bundle
-import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.firebase.auth.FirebaseAuth
 import com.hodnex.messengerapp.R
 import com.hodnex.messengerapp.adapter.ChatAdapter
 import com.hodnex.messengerapp.databinding.FragmentChatBinding
@@ -40,7 +36,6 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
                 if (editTextSendMessage.text.isNotEmpty()){
                     viewModel.sendMessage(editTextSendMessage.text.toString())
                     editTextSendMessage.setText("")
-                    Log.d("Main", editTextSendMessage.text.toString())
                 }
             }
         }
@@ -50,7 +45,6 @@ class ChatFragment : Fragment(R.layout.fragment_chat) {
         )?.text = viewModel.title
 
         viewModel.messages.observe(viewLifecycleOwner) {
-            Log.d("Main", FirebaseAuth.getInstance().uid!!)
             chatAdapter.submitList(it)
             binding.recyclerViewChat.smoothScrollToPosition(0)
         }

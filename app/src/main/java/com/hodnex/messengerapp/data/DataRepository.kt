@@ -1,6 +1,5 @@
 package com.hodnex.messengerapp.data
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.auth.FirebaseAuth
@@ -18,6 +17,8 @@ class DataRepository {
     private val dialogsCollectionReference = FirebaseFirestore.getInstance().collection("Dialogs")
 
     private val _messages = MutableStateFlow(listOf<Message>())
+
+    private val _invitations = MutableStateFlow(listOf<Invitation>())
     val invitations by lazy { getInvitations() }
 
     private val _dialogs = MutableStateFlow(listOf<Dialog>())
@@ -39,7 +40,7 @@ class DataRepository {
     }
 
 
-    fun getMessages(userId: String): StateFlow<List<Message>> {
+    fun getMessages(userId: String): Flow<List<Message>> {
         val messagesFromReference = messagesCollectionReference.document(currentUserId)
             .collection(userId)
         val messagesToReference = messagesCollectionReference.document(userId)
@@ -80,16 +81,14 @@ class DataRepository {
     }
 
     @JvmName("getInvitations1")
-    private fun getInvitations(): StateFlow<List<Invitation>> {
-        val invitationsList = MutableStateFlow(listOf<Invitation>())
-        Log.d("Main", "Invitation")
+    private fun getInvitations(): Flow<List<Invitation>> {
         invitationsCollectionReference.document(currentUserId).collection(currentUserId)
             .addSnapshotListener { snapshot, _ ->
                 if (snapshot != null) {
-                    invitationsList.value = snapshot.toObjects(Invitation::class.java)
+                    _invitations.value = snapshot.toObjects(Invitation::class.java)
                 }
             }
-        return invitationsList
+        return _invitations
     }
 
     fun addInvitation(invitation: Invitation) {
@@ -106,7 +105,6 @@ class DataRepository {
 
     @JvmName("getDialogs1")
     private fun getDialogs() : Flow<List<Dialog>> {
-        Log.d("Main", "Dialog")
         dialogsCollectionReference.document(currentUserId).collection(currentUserId)
             .addSnapshotListener { snapshot, _ ->
                 if (snapshot != null) {
@@ -197,7 +195,7 @@ class DataRepository {
 
     fun findInvitation(user: User?): Invitation? {
         return if (user != null) {
-            invitations.value.find { it.senderId == user.uid }
+            _invitations.value.find { it.senderId == user.uid }
         } else {
             null
         }
